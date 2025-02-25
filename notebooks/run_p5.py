@@ -279,6 +279,7 @@ args.load = args_parsed.load
 from src.utils import load_state_dict, LossMeter, set_global_logging_level
 from pprint import pprint
 
+
 def load_checkpoint(ckpt_path):
     state_dict = load_state_dict(ckpt_path, 'cuda')
     results = model.load_state_dict(state_dict, strict=False)
