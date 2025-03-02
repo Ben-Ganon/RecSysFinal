@@ -1254,145 +1254,6 @@ class RAGEnhancedP5Dataset(Dataset):
 
         return out_dict
 
-    # def __getitem__(self, idx):
-    #     out_dict = {}
-    #     out_dict['args'] = self.args
-        
-    #     loss_weight = 1.0
-        
-    #     datum_info_idx = self.datum_info[idx]
-    #     assert datum_info_idx[0] == idx
-    #     if len(datum_info_idx) == 3:
-    #         task_name = datum_info_idx[1]
-    #         datum_idx = datum_info_idx[2]
-    #     elif len(datum_info_idx) == 4:
-    #         task_name = datum_info_idx[1]
-    #         datum_idx = datum_info_idx[2]
-    #         task_idx = datum_info_idx[3]
-    #     else:
-    #         raise NotImplementedError
-        
-    #     # Extract data based on task type
-    #     if task_name == 'rating':            
-    #         rating_datum = self.rating_data[datum_idx]
-    #         task_candidates = self.task_list[task_name]
-    #         task_idx = random.randint(0, len(task_candidates)-1) # random choose the task index for task_candidates
-    #         task_template = self.all_tasks['rating'][task_candidates[task_idx]]
-    #         assert task_template['task'] == 'rating'
-            
-    #         # Original data processing based on task template ID
-    #         # ... Your existing code for different templates (from P5_Amazon_Dataset) ...
-    #         if task_template['id'] == '1-1':
-    #             user_id = self.user2id[rating_datum['reviewerID']]
-    #             target_item = self.item2id[rating_datum['asin']]
-    #             source_text = task_template['source'].format(user_id, target_item)
-    #             target_text = task_template['target'].format(self.gaussian_sampling(rating_datum))
-    #         elif task_template['id'] == '1-2':
-    #             user_id = self.user2id[rating_datum['reviewerID']]
-    #             if 'title' in self.meta_data[self.meta_dict[rating_datum['asin']]]:
-    #                 title = self.meta_data[self.meta_dict[rating_datum['asin']]]['title']
-    #         elif task_template['id'] == '1-6':
-    #             if 'name' in self.user_data[self.user_meta_dict[rating_datum['reviewerID']]]:
-    #                 user_desc = self.user_data[self.user_meta_dict[rating_datum['reviewerID']]]['name']
-    #             else:
-    #                 user_desc = rating_datum['reviewerID']
-    #             source_text = task_template['source'].format(user_desc, self.item2id[rating_datum['asin']])
-    #             target_text = task_template['target'].format(self.gaussian_sampling(rating_datum))
-    #             # else:
-    #             #     title = 'unknown title'
-    #             # source_text = task_template['source'].format(user_id, title) 
-    #             # target_text = task_template['target'].format(self.gaussian_sampling(rating_datum))
-    #         # ... rest of your template handling from pretrain_data.py ...
-    #         # Just showing a couple examples to save space
-            
-    #         # Now enhance the source text with RAG
-    #         if user_id in self.user_items:
-    #             user_history = self.user_items.get(user_id, [])
-                
-    #             # Create query for RAG retrieval
-    #             query = f"Rating prediction for user {user_id} and item {target_item}"
-    #             if 'title' in self.meta_data[self.meta_dict[rating_datum['asin']]]:
-    #                 title = self.meta_data[self.meta_dict[rating_datum['asin']]]['title']
-    #                 query += f" titled: {title}"
-                
-    #             # Retrieve relevant items
-    #             retrieved_items, scores = retrieve_relevant_items(
-    #                 query, user_history, self.embedder, self.item_index, self.item_ids, 
-    #                 self.meta_data, self.meta_dict, self.id2item, n_results=3
-    #             )
-                
-    #             # Generate enhanced context
-    #             enhanced_context = generate_enhanced_context(user_id, user_history, self.meta_data, self.meta_dict, self.id2item, target_item)
-                
-    #             # Add retrieved items to context
-    #             if retrieved_items:
-    #                 enhanced_context += "\nSimilar items that might be relevant: "
-    #                 retrieved_info = []
-    #                 for item_asin in retrieved_items:
-    #                     if item_asin in self.meta_dict:
-    #                         item_meta = self.meta_data[self.meta_dict[item_asin]]
-    #                         if 'title' in item_meta:
-    #                             retrieved_info.append(f"{item_meta['title']}")
-    #                 enhanced_context += ", ".join(retrieved_info)
-    #                 enhanced_context += ".\n"
-                
-    #             source_text = f"{enhanced_context}\n{source_text}"
-        
-    #     elif task_name == 'sequential':
-    #         # Process sequential data and add RAG enhancement (similar pattern)
-    #         # ... Your existing code for different templates (from P5_Amazon_Dataset) ...
-    #         # Then add RAG enhancement
-        
-    #     elif task_name == 'explanation':
-    #         # Process explanation data and add RAG enhancement (similar pattern)
-    #         # ... Your existing code for different templates (from P5_Amazon_Dataset) ...
-    #         # Then add RAG enhancement
-        
-    #     elif task_name == 'review':
-    #         # Process review data and add RAG enhancement (similar pattern)
-    #         # ... Your existing code for different templates (from P5_Amazon_Dataset) ...
-    #         # Then add RAG enhancement
-        
-    #     elif task_name == 'traditional':
-    #         # Process traditional data and add RAG enhancement (similar pattern)
-    #         # ... Your existing code for different templates (from P5_Amazon_Dataset) ...
-    #         # Then add RAG enhancement
-        
-    #     elif task_name == 'zeroshot':
-    #         # Process zeroshot data and add RAG enhancement (similar pattern)
-    #         # ... Your existing code for different templates (from P5_Amazon_Dataset) ...
-    #         # Then add RAG enhancement
-        
-    #     else:
-    #         raise NotImplementedError
-        
-    #     # Encode the input and target
-    #     input_ids = self.tokenizer.encode(
-    #             source_text, padding=True, truncation=True, max_length=self.args.max_text_length)
-    #     tokenized_text = self.tokenizer.tokenize(source_text)
-    #     whole_word_ids = self.calculate_whole_word_ids(tokenized_text, input_ids)
-    #     assert len(whole_word_ids) == len(input_ids)
-        
-    #     target_ids = self.tokenizer.encode(
-    #             target_text, padding=True, truncation=True, max_length=self.args.gen_max_length)
-
-    #     # Prepare output dictionary
-    #     out_dict['input_ids'] = torch.LongTensor(input_ids)
-    #     out_dict['input_length'] = len(input_ids)
-    #     out_dict['whole_word_ids'] = torch.LongTensor(whole_word_ids)
-    #     out_dict['target_ids'] = torch.LongTensor(target_ids)
-    #     out_dict['target_length'] = len(target_ids)
-
-    #     out_dict['source_text'] = source_text
-    #     out_dict['tokenized_text'] = tokenized_text
-    #     out_dict['target_text'] = target_text
-
-    #     out_dict['task'] = task_template['task']
-
-    #     out_dict['loss_weight'] = loss_weight
-
-    #     return out_dict
-    
     def calculate_whole_word_ids(self, tokenized_text, input_ids):
         whole_word_ids = []
         curr = 0
@@ -1835,7 +1696,6 @@ print("Loading meta data...")
 meta_data = []
 path = os.getcwd()
 for meta in parse(os.path.join(path, 'notebooks/data', args.test, 'meta.json.gz')):
-# for meta in parse(os.path.join('../data', args.test, 'meta.json.gz')):
     meta_data.append(meta)
 
 meta_dict = {m['asin']: i for i, m in enumerate(meta_data)}
@@ -1893,250 +1753,250 @@ from evaluate.metrics4rec import evaluate_all
 os.makedirs(args.output, exist_ok=True)
 
 
-# print("################ Evaluation - Rating ################")
-# print("Testing Rating with scale 1-10")
-# test_task_list = {'rating': ['1-10']}
-# test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
+print("################ Evaluation - Rating ################")
+print("Testing Rating with scale 1-10")
+test_task_list = {'rating': ['1-10']}
+test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
 
-# zeroshot_test_loader = get_rag_enhanced_loader(
-#         args,
-#         test_task_list,
-#         test_sample_numbers,
-#         embedder,
-#         item_index,
-#         item_ids,
-#         review_index,
-#         review_meta,
-#         meta_data,
-#         meta_dict,
-#         id2item,
-#         user_items,
-#         split=args.test, 
-#         mode='test', 
-#         batch_size=args.batch_size,
-#         workers=0,
-#         distributed=args.distributed
-# )
-# print(f"Number of batches: {len(zeroshot_test_loader)}")
+zeroshot_test_loader = get_rag_enhanced_loader(
+        args,
+        test_task_list,
+        test_sample_numbers,
+        embedder,
+        item_index,
+        item_ids,
+        review_index,
+        review_meta,
+        meta_data,
+        meta_dict,
+        id2item,
+        user_items,
+        split=args.test, 
+        mode='test', 
+        batch_size=args.batch_size,
+        workers=0,
+        distributed=args.distributed
+)
+print(f"Number of batches: {len(zeroshot_test_loader)}")
 
-# gt_ratings = []
-# pred_ratings = []
-# for i, batch in tqdm(enumerate(zeroshot_test_loader)):
-#     with torch.no_grad():
-#         results = model.generate_step(batch)
-#         gt_ratings.extend(batch['target_text'])
-#         pred_ratings.extend(results)
+gt_ratings = []
+pred_ratings = []
+for i, batch in tqdm(enumerate(zeroshot_test_loader)):
+    with torch.no_grad():
+        results = model.generate_step(batch)
+        gt_ratings.extend(batch['target_text'])
+        pred_ratings.extend(results)
         
-# predicted_rating = [(float(r), float(p)) for (r, p) in zip(gt_ratings, pred_ratings) if p in [str(i/10.0) for i in list(range(10, 50))]]
-# RMSE = root_mean_square_error(predicted_rating, 5.0, 1.0)
-# print('Results for Rating 1-10:')
-# print('RMSE {:7.4f}'.format(RMSE))
-# MAE = mean_absolute_error(predicted_rating, 5.0, 1.0)
-# print('MAE {:7.4f}'.format(MAE))
+predicted_rating = [(float(r), float(p)) for (r, p) in zip(gt_ratings, pred_ratings) if p in [str(i/10.0) for i in list(range(10, 50))]]
+RMSE = root_mean_square_error(predicted_rating, 5.0, 1.0)
+print('Results for Rating 1-10:')
+print('RMSE {:7.4f}'.format(RMSE))
+MAE = mean_absolute_error(predicted_rating, 5.0, 1.0)
+print('MAE {:7.4f}'.format(MAE))
 
-# # Save results to JSON
-# rating_results_1_10 = {
-#     'task': 'rating_1-10',
-#     'metric': {
-#         'rmse': RMSE,
-#         'mae': MAE
-#     }
-# }
-# with open(os.path.join(args.output, f"{args.test}_{args.backbone}_rating_1-10_rag.json"), 'w') as f:
-#     json.dump(rating_results_1_10, f, indent=2)
+# Save results to JSON
+rating_results_1_10 = {
+    'task': 'rating_1-10',
+    'metric': {
+        'rmse': RMSE,
+        'mae': MAE
+    }
+}
+with open(os.path.join(args.output, f"{args.test}_{args.backbone}_rating_1-10_rag.json"), 'w') as f:
+    json.dump(rating_results_1_10, f, indent=2)
 
-# print("Testing Rating 1-6")
-# test_task_list = {'rating': ['1-6']}
-# test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
+print("Testing Rating 1-6")
+test_task_list = {'rating': ['1-6']}
+test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
 
-# zeroshot_test_loader = get_rag_enhanced_loader(
-#         args,
-#         test_task_list,
-#         test_sample_numbers,
-#         embedder,
-#         item_index,
-#         item_ids,
-#         review_index,
-#         review_meta,
-#         meta_data,
-#         meta_dict,
-#         id2item,
-#         user_items,
-#         split=args.test, 
-#         mode='test', 
-#         batch_size=args.batch_size,
-#         workers=0,
-#         distributed=args.distributed
-# )
-# print(f"Number of batches: {len(zeroshot_test_loader)}")
+zeroshot_test_loader = get_rag_enhanced_loader(
+        args,
+        test_task_list,
+        test_sample_numbers,
+        embedder,
+        item_index,
+        item_ids,
+        review_index,
+        review_meta,
+        meta_data,
+        meta_dict,
+        id2item,
+        user_items,
+        split=args.test, 
+        mode='test', 
+        batch_size=args.batch_size,
+        workers=0,
+        distributed=args.distributed
+)
+print(f"Number of batches: {len(zeroshot_test_loader)}")
 
-# gt_ratings = []
-# pred_ratings = []
-# for i, batch in tqdm(enumerate(zeroshot_test_loader)):
-#     with torch.no_grad():
-#         results = model.generate_step(batch)
-#         gt_ratings.extend(batch['target_text'])
-#         pred_ratings.extend(results)
+gt_ratings = []
+pred_ratings = []
+for i, batch in tqdm(enumerate(zeroshot_test_loader)):
+    with torch.no_grad():
+        results = model.generate_step(batch)
+        gt_ratings.extend(batch['target_text'])
+        pred_ratings.extend(results)
         
-# predicted_rating = [(float(r), float(p)) for (r, p) in zip(gt_ratings, pred_ratings) if p in [str(i/10.0) for i in list(range(10, 50))]]
-# RMSE = root_mean_square_error(predicted_rating, 5.0, 1.0)
-# print('Results for Rating with scale 1-6:')
-# print('RMSE {:7.4f}'.format(RMSE))
-# MAE = mean_absolute_error(predicted_rating, 5.0, 1.0)
-# print('MAE {:7.4f}'.format(MAE))
+predicted_rating = [(float(r), float(p)) for (r, p) in zip(gt_ratings, pred_ratings) if p in [str(i/10.0) for i in list(range(10, 50))]]
+RMSE = root_mean_square_error(predicted_rating, 5.0, 1.0)
+print('Results for Rating with scale 1-6:')
+print('RMSE {:7.4f}'.format(RMSE))
+MAE = mean_absolute_error(predicted_rating, 5.0, 1.0)
+print('MAE {:7.4f}'.format(MAE))
 
-# # Save results to JSON
-# rating_results_1_6 = {
-#     'task': 'rating_1-6',
-#     'metric': {
-#         'rmse': RMSE,
-#         'mae': MAE
-#     }
-# }
-# with open(os.path.join(args.output, f"{args.test}_{args.backbone}_rating_1-6_rag.json"), 'w') as f:
-#     json.dump(rating_results_1_6, f, indent=2)
+# Save results to JSON
+rating_results_1_6 = {
+    'task': 'rating_1-6',
+    'metric': {
+        'rmse': RMSE,
+        'mae': MAE
+    }
+}
+with open(os.path.join(args.output, f"{args.test}_{args.backbone}_rating_1-6_rag.json"), 'w') as f:
+    json.dump(rating_results_1_6, f, indent=2)
 
-# print("################ Evaluation - Sequential ################")
-# print("Testing Sequential with prompt 2-13")
-# test_task_list = {'sequential': ['2-13']}
-# test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
+print("################ Evaluation - Sequential ################")
+print("Testing Sequential with prompt 2-13")
+test_task_list = {'sequential': ['2-13']}
+test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
 
-# zeroshot_test_loader = get_rag_enhanced_loader(
-#         args,
-#         test_task_list,
-#         test_sample_numbers,
-#         embedder,
-#         item_index,
-#         item_ids,
-#         review_index,
-#         review_meta,
-#         meta_data,
-#         meta_dict,
-#         id2item,
-#         user_items,
-#         split=args.test, 
-#         mode='test', 
-#         batch_size=args.batch_size,
-#         workers=0,
-#         distributed=args.distributed
-# )
-# print(f"Number of batches: {len(zeroshot_test_loader)}")
+zeroshot_test_loader = get_rag_enhanced_loader(
+        args,
+        test_task_list,
+        test_sample_numbers,
+        embedder,
+        item_index,
+        item_ids,
+        review_index,
+        review_meta,
+        meta_data,
+        meta_dict,
+        id2item,
+        user_items,
+        split=args.test, 
+        mode='test', 
+        batch_size=args.batch_size,
+        workers=0,
+        distributed=args.distributed
+)
+print(f"Number of batches: {len(zeroshot_test_loader)}")
 
-# all_info = []
-# for i, batch in tqdm(enumerate(zeroshot_test_loader)):
-#     with torch.no_grad():
-#         results = model.generate_step(batch)
-#         beam_outputs = model.generate(
-#                 batch['input_ids'].to('cuda'), 
-#                 max_length=50, 
-#                 num_beams=20,
-#                 no_repeat_ngram_size=0, 
-#                 num_return_sequences=20,
-#                 early_stopping=True
-#         )
-#         generated_sents = model.tokenizer.batch_decode(beam_outputs, skip_special_tokens=True)
-#         for j, item in enumerate(zip(results, batch['target_text'], batch['source_text'])):
-#             new_info = {}
-#             new_info['target_item'] = item[1]
-#             new_info['gen_item_list'] = generated_sents[j*20: (j+1)*20]
-#             all_info.append(new_info)
+all_info = []
+for i, batch in tqdm(enumerate(zeroshot_test_loader)):
+    with torch.no_grad():
+        results = model.generate_step(batch)
+        beam_outputs = model.generate(
+                batch['input_ids'].to('cuda'), 
+                max_length=50, 
+                num_beams=20,
+                no_repeat_ngram_size=0, 
+                num_return_sequences=20,
+                early_stopping=True
+        )
+        generated_sents = model.tokenizer.batch_decode(beam_outputs, skip_special_tokens=True)
+        for j, item in enumerate(zip(results, batch['target_text'], batch['source_text'])):
+            new_info = {}
+            new_info['target_item'] = item[1]
+            new_info['gen_item_list'] = generated_sents[j*20: (j+1)*20]
+            all_info.append(new_info)
 
-# gt = {}
-# ui_scores = {}
-# for i, info in enumerate(all_info):
-#     gt[i] = [int(info['target_item'])]
-#     pred_dict = {}
-#     for j in range(len(info['gen_item_list'])):
-#         try:
-#             pred_dict[int(info['gen_item_list'][j])] = -(j+1)
-#         except:
-#             pass
-#     ui_scores[i] = pred_dict
-
-
-
-# print('Results for sequential 2-13:')
-# metrics_5_2_13 = evaluate_all(ui_scores, gt, 5)[1]
-# metrics_10_2_13 = evaluate_all(ui_scores, gt, 10)[1]
-
-# # Save results to JSON
-# sequential_results_2_13 = {
-#     'task': 'sequential_2-13',
-#     'metric_5': metrics_5_2_13,
-#     'metric_10': metrics_10_2_13
-# }
-# with open(os.path.join(args.output, f"{args.test}_{args.backbone}_sequential_2-13_rag.json"), 'w') as f:
-#     json.dump(sequential_results_2_13, f, indent=2)
+gt = {}
+ui_scores = {}
+for i, info in enumerate(all_info):
+    gt[i] = [int(info['target_item'])]
+    pred_dict = {}
+    for j in range(len(info['gen_item_list'])):
+        try:
+            pred_dict[int(info['gen_item_list'][j])] = -(j+1)
+        except:
+            pass
+    ui_scores[i] = pred_dict
 
 
-# print("Testing Sequential with prompt 2-3")
-# test_task_list = {'sequential': ['2-3']}
-# test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
 
-# zeroshot_test_loader = get_rag_enhanced_loader(
-#         args,
-#         test_task_list,
-#         test_sample_numbers,
-#         embedder,
-#         item_index,
-#         item_ids,
-#         review_index,
-#         review_meta,
-#         meta_data,
-#         meta_dict,
-#         id2item,
-#         user_items,
-#         split=args.test, 
-#         mode='test', 
-#         batch_size=args.batch_size,
-#         workers=0,
-#         distributed=args.distributed
-# )
-# print(f"Number of batches: {len(zeroshot_test_loader)}")
+print('Results for sequential 2-13:')
+metrics_5_2_13 = evaluate_all(ui_scores, gt, 5)[1]
+metrics_10_2_13 = evaluate_all(ui_scores, gt, 10)[1]
 
-# all_info = []
-# for i, batch in tqdm(enumerate(zeroshot_test_loader)):
-#     with torch.no_grad():
-#         results = model.generate_step(batch)
-#         beam_outputs = model.generate(
-#                 batch['input_ids'].to('cuda'), 
-#                 max_length=50, 
-#                 num_beams=20,
-#                 no_repeat_ngram_size=0, 
-#                 num_return_sequences=20,
-#                 early_stopping=True
-#         )
-#         generated_sents = model.tokenizer.batch_decode(beam_outputs, skip_special_tokens=True)
-#         for j, item in enumerate(zip(results, batch['target_text'], batch['source_text'])):
-#             new_info = {}
-#             new_info['target_item'] = item[1]
-#             new_info['gen_item_list'] = generated_sents[j*20: (j+1)*20]
-#             all_info.append(new_info)
+# Save results to JSON
+sequential_results_2_13 = {
+    'task': 'sequential_2-13',
+    'metric_5': metrics_5_2_13,
+    'metric_10': metrics_10_2_13
+}
+with open(os.path.join(args.output, f"{args.test}_{args.backbone}_sequential_2-13_rag.json"), 'w') as f:
+    json.dump(sequential_results_2_13, f, indent=2)
+
+
+print("Testing Sequential with prompt 2-3")
+test_task_list = {'sequential': ['2-3']}
+test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
+
+zeroshot_test_loader = get_rag_enhanced_loader(
+        args,
+        test_task_list,
+        test_sample_numbers,
+        embedder,
+        item_index,
+        item_ids,
+        review_index,
+        review_meta,
+        meta_data,
+        meta_dict,
+        id2item,
+        user_items,
+        split=args.test, 
+        mode='test', 
+        batch_size=args.batch_size,
+        workers=0,
+        distributed=args.distributed
+)
+print(f"Number of batches: {len(zeroshot_test_loader)}")
+
+all_info = []
+for i, batch in tqdm(enumerate(zeroshot_test_loader)):
+    with torch.no_grad():
+        results = model.generate_step(batch)
+        beam_outputs = model.generate(
+                batch['input_ids'].to('cuda'), 
+                max_length=50, 
+                num_beams=20,
+                no_repeat_ngram_size=0, 
+                num_return_sequences=20,
+                early_stopping=True
+        )
+        generated_sents = model.tokenizer.batch_decode(beam_outputs, skip_special_tokens=True)
+        for j, item in enumerate(zip(results, batch['target_text'], batch['source_text'])):
+            new_info = {}
+            new_info['target_item'] = item[1]
+            new_info['gen_item_list'] = generated_sents[j*20: (j+1)*20]
+            all_info.append(new_info)
             
-# gt = {}
-# ui_scores = {}
-# for i, info in enumerate(all_info):
-#     gt[i] = [int(info['target_item'])]
-#     pred_dict = {}
-#     for j in range(len(info['gen_item_list'])):
-#         try:
-#             pred_dict[int(info['gen_item_list'][j])] = -(j+1)
-#         except:
-#             pass
-#     ui_scores[i] = pred_dict
+gt = {}
+ui_scores = {}
+for i, info in enumerate(all_info):
+    gt[i] = [int(info['target_item'])]
+    pred_dict = {}
+    for j in range(len(info['gen_item_list'])):
+        try:
+            pred_dict[int(info['gen_item_list'][j])] = -(j+1)
+        except:
+            pass
+    ui_scores[i] = pred_dict
     
-# print('Results for sequential 2-3:')
-# metrics_5_2_3 = evaluate_all(ui_scores, gt, 5)[1]
-# metrics_10_2_3 = evaluate_all(ui_scores, gt, 10)[1]
+print('Results for sequential 2-3:')
+metrics_5_2_3 = evaluate_all(ui_scores, gt, 5)[1]
+metrics_10_2_3 = evaluate_all(ui_scores, gt, 10)[1]
 
-# # Save results to JSON
-# sequential_results_2_3 = {
-#     'task': 'sequential_2-3',
-#     'metric_5': metrics_5_2_3,
-#     'metric_10': metrics_10_2_3
-# }
-# with open(os.path.join(args.output, f"{args.test}_{args.backbone}_sequential_2-3_rag.json"), 'w') as f:
-#     json.dump(sequential_results_2_3, f, indent=2)
+# Save results to JSON
+sequential_results_2_3 = {
+    'task': 'sequential_2-3',
+    'metric_5': metrics_5_2_3,
+    'metric_10': metrics_10_2_3
+}
+with open(os.path.join(args.output, f"{args.test}_{args.backbone}_sequential_2-3_rag.json"), 'w') as f:
+    json.dump(sequential_results_2_3, f, indent=2)
 
 print("################ Evaluation - Explanation ################")
 print("Testing Explanation with prompt 3-12")
@@ -2642,7 +2502,7 @@ with open(os.path.join(args.output, f"{args.test}_{args.backbone}_traditional_5-
 
 print("Testing Traditional with prompt 5-1")
 test_task_list = {'traditional': ['5-1']}
-test_sample_numbers = {'traditional': 100}
+test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
 
 zeroshot_test_loader = get_rag_enhanced_loader(
         args,
@@ -2717,7 +2577,7 @@ with open(os.path.join(args.output, f"{args.test}_{args.backbone}_traditional_5-
 
 print("Testing Traditional with prompt 5-4")
 test_task_list = {'traditional': ['5-4']}
-test_sample_numbers = {'traditional': 100}
+test_sample_numbers = {'rating': 1, 'sequential': (1, 1, 1), 'explanation': 1, 'review': 1, 'traditional': (1, 1)}
 
 all_item_ids = []
 for i, batch in tqdm(enumerate(zeroshot_test_loader)):
